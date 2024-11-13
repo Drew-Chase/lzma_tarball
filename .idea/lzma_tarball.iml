@@ -4,8 +4,10 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/examples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/examples/compress_path/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/extract_to_directory/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/examples/compress_path/target" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/extract_to_directory/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
