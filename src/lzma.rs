@@ -31,6 +31,7 @@ pub struct LZMAResult {
 pub struct LZMACallbackResult {
 	pub bytes_processed: u64,
 	pub bytes_per_second: u64,
+	pub percentage: f32,
 }
 
 impl LZMATarball {
@@ -48,18 +49,23 @@ impl LZMATarball {
 			Some(name) => name.to_str(),
 			None => Some("archive"),
 		}
-			.unwrap_or_else(|| "archive");
+			.unwrap_or("archive");
 
 		let tar_file_path = temp_dir().join(format!(
 			"{}-{}.tar",
 			filename,
 			chrono::Utc::now().timestamp()
 		));
+		let output = output.as_ref();
+		// create output directory if it doesn't exist
+		if let Some(parent) = output.parent() {
+			std::fs::create_dir_all(parent)?;
+		}
 
 		Ok(LZMATarball {
 			compression_level: 6,
 			buffer_size: 64,
-			output_file: output.as_ref().to_path_buf(),
+			output_file: output.to_path_buf(),
 			tar_file: tar_file_path,
 			input_path: absolute_input,
 		})
@@ -248,6 +254,7 @@ fn compress_tar<F>(
 	let mut compressor = XzEncoder::new(output_file, level as u32);
 	let mut buffer = vec![0; 1024 * (buffer_size as usize)];
 
+	let total_size = std::fs::metadata(input_path)?.len();
 	debug!("Balling up the tar with {}KB Buffer...", buffer_size);
 	let mut bytes_processed = 0;
 	let start = std::time::Instant::now();
@@ -260,9 +267,11 @@ fn compress_tar<F>(
 		let elapsed_seconds = start.elapsed().as_secs();
 		if elapsed_seconds > 0 {
 			let bytes_per_second = bytes_processed / elapsed_seconds;
+			let percentage = bytes_processed as f32 / total_size as f32;
 			callback(LZMACallbackResult {
 				bytes_processed,
 				bytes_per_second,
+				percentage,
 			});
 		}
 		compressor.write_all(&buffer[..bytes_read])?;
