@@ -1,3 +1,57 @@
+//! LZMA compressed tarball reader.
+//!
+//! The `LZMATarballReader` is a utility for handling the decompression of LZMA compressed tarball files.
+//! It provides various configuration options for file handling and decompression processes.
+//!
+//! # Features
+//! - Decompresses LZMA compressed tarballs
+//! - Preserves file metadata (mtime, ownership, permissions)
+//! - Supports overwriting existing files
+//!
+//! # Example usage of `LZMATarballReader`
+//!
+//! ```rust
+//! use lzma_tarball::reader::LZMATarballReader;
+//!
+//! fn main() {
+//!     // Path to the compressed tarball file
+//!     let archive = "../test/test.tar.xz";
+//!
+//!     // Create a new instance of `LZMATarballReader`
+//!     let result = LZMATarballReader::new(archive)
+//!    	 .unwrap()
+//!    	 // Decompress the archive to the specified output directory
+//!    	 .decompress("../test/output")
+//!    	 .unwrap();
+//!
+//!     // Retrieve decompression results
+//!     let files = result.files;
+//!     let duration = result.elapsed_time;
+//!     let total_size = result.total_size;
+//!
+//!     // Print decompression summary
+//!     println!(
+//!    	 "Decompressed {} files in {:?} with a total size of {} bytes", 
+//!    	 files.len(), 
+//!    	 duration, 
+//!    	 total_size
+//!     );
+//! }
+//!
+//! ```
+//!
+//! # Methods
+//! - new: Creates a new `LZMATarballReader`.
+//! - set_overwrite: Sets whether to overwrite existing files.
+//! - set_mask: Sets the file permission mask.
+//! - set_ignore_zeros: Sets whether to ignore zero blocks in the archive.
+//! - set_preserve_mtime: Sets whether to preserve file modification times.
+//! - set_preserve_ownerships: Sets whether to preserve file ownerships.
+//! - set_preserve_permissions: Sets whether to preserve file permissions.
+//! - entries: Lists entries in the tarball archive.
+//! - get_archive: Returns an `Archive` object for the tarball file.
+//! - decompress: Decompresses the tarball archive to a specified output directory.
+
 use std::error::Error;
 use std::fs;
 use std::fs::File;
@@ -16,7 +70,6 @@ pub struct LZMATarballReader {
 	preserve_ownerships: bool,
 	preserve_permissions: bool,
 	unpack_xattrs: bool,
-
 }
 
 /// `DecompressionResult` holds the result of a decompression operation.
@@ -151,7 +204,7 @@ impl LZMATarballReader {
 		let archive = &self.tar_file;
 		let file = File::open(archive)?;
 		let mut archive = Archive::new(XzDecoder::new(file));
-		
+
 		// Set archive options
 		archive.set_overwrite(self.overwrite);
 		archive.set_mask(self.mask);
@@ -160,7 +213,7 @@ impl LZMATarballReader {
 		archive.set_preserve_ownerships(self.preserve_ownerships);
 		archive.set_preserve_permissions(self.preserve_permissions);
 		archive.set_unpack_xattrs(self.unpack_xattrs);
-		
+
 		Ok(archive)
 	}
 
