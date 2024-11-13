@@ -9,7 +9,7 @@ use xz2::write::XzEncoder;
 
 /// Options for LZMA compression
 #[derive(Debug, Clone)]
-pub struct LZMATarball {
+pub struct LZMATarballWriter {
 	pub compression_level: u8,
 	pub buffer_size: u16,
 	pub output_file: PathBuf,
@@ -34,7 +34,7 @@ pub struct LZMACallbackResult {
 	pub percentage: f32,
 }
 
-impl LZMATarball {
+impl LZMATarballWriter {
 	/// Creates new LZMAOptions with default settings
 	/// - Default Compression level: 6
 	/// - Default Buffer size: 64KB
@@ -62,7 +62,7 @@ impl LZMATarball {
 			std::fs::create_dir_all(parent)?;
 		}
 
-		Ok(LZMATarball {
+		Ok(LZMATarballWriter {
 			compression_level: 6,
 			buffer_size: 64,
 			output_file: output.to_path_buf(),
