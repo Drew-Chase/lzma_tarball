@@ -2,6 +2,9 @@
 
 This library provides functionalities to compress directories and files into `.tar.xz` format using configurable options.
 
+##  Examples
+See the [examples](examples/) directory for more detailed examples.
+
 ## Creating an `LZMATarball` Instance
 
 You can create an `LZMATarball` instance by specifying the input directory (or file) and the output file path.
