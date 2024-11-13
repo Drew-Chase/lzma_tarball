@@ -2,14 +2,14 @@
 
 This library provides functionalities to compress directories and files into `.tar.xz` format using configurable options.
 
-## Creating an `LZMAOptions` Instance
+## Creating an `LZMATarball` Instance
 
-You can create an `LZMAOptions` instance by specifying the input directory (or file) and the output file path.
+You can create an `LZMATarball` instance by specifying the input directory (or file) and the output file path.
 
 ```rust
-use crate::lzma::LZMAOptions;
+use lzma_tarball::LZMATarball;
 
-let options = LZMAOptions::new("./input_directory", "output.tar.xz");
+let options = LZMATarball::new("./input_directory", "output.tar.xz");
 ```
 
 ## Configuring Options
@@ -17,7 +17,7 @@ let options = LZMAOptions::new("./input_directory", "output.tar.xz");
 You can configure the compression level and buffer size using the provided methods.
 
 ```rust
-let options = LZMAOptions::new("./input_directory", "output.tar.xz")
+let options = LZMATarball::new("./input_directory", "output.tar.xz")
      .with_compression_level(6)
      .with_buffer_size(64);
 ```
@@ -36,16 +36,16 @@ assert!(result.is_ok());
 
 ## Full Example
 
-This example demonstrates how to create an `LZMAOptions` instance, configure it, and use it to compress data while reporting progress.
+This example demonstrates how to create an `LZMATarball` instance, configure it, and use it to compress data while reporting progress.
 
 ```rust
-use crate::lzma::LZMAOptions;
+use lzma_tarball::LZMATarball;
 
-let result = LZMAOptions::new("./input_directory", "output.tar.xz")
+let result = LZMATarball::new("./input_directory", "output.tar.xz")
      .with_compression_level(6)
      .with_buffer_size(64)
      .compress(|progress| {
-         println!("Progress: {:?}", progress);
+    	 println!("Progress: {:?}", progress);
      });
 
 assert!(result.is_ok());
@@ -56,7 +56,7 @@ assert!(result.is_ok());
 By default, the TAR file is created in the current directory. You can set a custom TAR file path using the `set_tar_file` method.
 
 ```rust
-let options = LZMAOptions::new("./input_directory", "output.tar.xz")
+let options = LZMATarball::new("./input_directory", "output.tar.xz")
      .set_tar_file("./custom/path/custom.tar");
 
 let result = options.compress(|progress| {
@@ -86,7 +86,7 @@ match result {
 For reference, here are the definitions of the main structs used in this library.
 
 ```rust
-pub struct LZMAOptions {
+pub struct LZMATarball {
      pub compression_level: u8,
      pub buffer_size: u16,
      pub output_file: PathBuf,
@@ -111,7 +111,7 @@ pub struct LZMACallbackResult {
 
 Here are some of the key methods available:
 
-- `new`: Creates a new instance of `LZMAOptions`.
+- `new`: Creates a new instance of `LZMATarball`.
 - `with_compression_level`: Sets the desired compression level.
 - `with_buffer_size`: Specifies the buffer size to use.
 - `set_tar_file`: Sets a custom TAR file path.
