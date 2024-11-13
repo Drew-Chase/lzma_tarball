@@ -38,7 +38,12 @@ impl LZMATarball {
 	/// - Default Compression level: 6
 	/// - Default Buffer size: 64KB
 	/// - Default Tar File: `%TEMP%/{filename|"archive"}-{timestamp}.tar`
-	pub fn new(input: impl AsRef<Path>, output: impl AsRef<Path>) -> Self {
+	pub fn new(input: impl AsRef<Path>, output: impl AsRef<Path>) -> Result<Self, Box<dyn Error>> {
+		let absolute_input = input.as_ref().canonicalize()?;
+		if !absolute_input.exists() {
+			error!("Input path does not exist: {:?}", absolute_input);
+			return Err("Input path does not exist".into());
+		}
 		let filename = match input.as_ref().file_name() {
 			Some(name) => name.to_str(),
 			None => Some("archive"),
@@ -51,13 +56,13 @@ impl LZMATarball {
 			chrono::Utc::now().timestamp()
 		));
 
-		LZMATarball {
+		Ok(LZMATarball {
 			compression_level: 6,
 			buffer_size: 64,
 			output_file: output.as_ref().to_path_buf(),
 			tar_file: tar_file_path,
-			input_path: input.as_ref().to_path_buf(),
-		}
+			input_path: absolute_input,
+		})
 	}
 
 	/// Sets the compression level (clamps between 0 and 9)
@@ -102,6 +107,7 @@ impl LZMATarball {
 			self.output_file.to_str().unwrap(),
 			self.compression_level,
 			self.buffer_size,
+			callback
 		) {
 			Ok(_) => (),
 			Err(e) => return Err(format!("Failed to compress tar file: {}", e).into()),
@@ -167,7 +173,8 @@ fn compress_directory(
 	directory: impl AsRef<Path>,
 	root: impl AsRef<Path>,
 	tar_builder: &mut Builder<BufWriter<File>>,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<(), Box<dyn Error>>
+{
 	debug!("Compressing directory: {:?}", directory.as_ref());
 	for entry in std::fs::read_dir(directory.as_ref())? {
 		let entry = entry?;
@@ -196,7 +203,8 @@ fn compress_file(
 	file: impl AsRef<Path>,
 	root: impl AsRef<Path>,
 	tar_builder: &mut Builder<BufWriter<File>>,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<(), Box<dyn Error>>
+{
 	let file = file.as_ref();
 	let root = root.as_ref();
 
@@ -224,12 +232,16 @@ fn compress_file(
 /// # Returns
 /// - `Ok(())` on success
 /// - `Box<dyn Error>` on failure
-fn compress_tar(
+fn compress_tar<F>(
 	input_path: &Path,
 	output_path: &str,
 	level: u8,
 	buffer_size: u16,
-) -> Result<(), Box<dyn Error>> {
+	callback: F
+) -> Result<(), Box<dyn Error>>
+	where
+		F: Fn(LZMACallbackResult) + 'static + Send + Sync,
+{
 	let mut input_file = BufReader::new(File::open(input_path)?);
 	let output_file = BufWriter::new(File::create(output_path)?);
 
@@ -237,10 +249,21 @@ fn compress_tar(
 	let mut buffer = vec![0; 1024 * (buffer_size as usize)];
 
 	debug!("Balling up the tar with {}KB Buffer...", buffer_size);
+	let mut bytes_processed = 0;
+	let start = std::time::Instant::now();
 	loop {
 		let bytes_read = input_file.read(&mut buffer)?;
 		if bytes_read == 0 {
 			break; // End of file
+		}
+		bytes_processed += bytes_read as u64;
+		let elapsed_seconds = start.elapsed().as_secs();
+		if elapsed_seconds > 0 {
+			let bytes_per_second = bytes_processed / elapsed_seconds;
+			callback(LZMACallbackResult {
+				bytes_processed,
+				bytes_per_second,
+			});
 		}
 		compressor.write_all(&buffer[..bytes_read])?;
 	}
