@@ -120,11 +120,13 @@
 use crate::lzma::LZMATarball;
 use log::{debug, info};
 
+
 pub mod lzma;
 
 #[test]
 fn test() {
 	let result = LZMATarball::new("./", "test.tar.xz")
+		.unwrap()
 		.with_compression_level(6)
 		.with_buffer_size(64)
 		.compress(|progress| {
