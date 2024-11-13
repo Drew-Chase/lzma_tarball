@@ -1,4 +1,4 @@
-use log::{debug, error, info};
+use log::{debug, error};
 use std::env::temp_dir;
 use std::error::Error;
 use std::fs::File;

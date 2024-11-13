@@ -117,14 +117,12 @@
 /// - `set_tar_file`: Sets a custom TAR file path.
 /// - `compress`: Compresses the data and calls the provided callback function with progress updates.
 
-use crate::lzma::LZMATarball;
-use log::{debug, info};
-
-
 pub mod lzma;
 
 #[test]
 fn test() {
+	use crate::lzma::LZMATarball;
+	use log::{debug, info};
 	let result = LZMATarball::new("./", "test.tar.xz")
 		.unwrap()
 		.with_compression_level(6)
