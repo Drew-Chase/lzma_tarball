@@ -1,3 +1,82 @@
+//! # LZMA Tarball Writer
+//! This documentation provides detailed instructions on how to use the LZMATarballWriter to compress files or directories into LZMA-compressed tarballs.
+//!
+//! ## Example
+//! Below is a basic example demonstrating how to use the `LZMATarballWriter` to compress a directory or file.
+//! ```rust
+//! use lzma_tarball::writer::LZMATarballWriter;
+//!
+//! fn main() {
+//!     // The input path can be any directory or file, specified as a relative or absolute path.
+//!     let input_path = "./";
+//!
+//!     // Specify the output file path. This will create the parent directories if they don't exist.
+//!     let output = "../test/test.tar.xz";
+//!
+//!     // Create a new LZMATarballWriter and configure it
+//!     let result = LZMATarballWriter::new(input_path, output)
+//!    	 .unwrap()
+//!    	 // Set the compression level to 6 - this is the default
+//!    	 // The range is 0-9, where 0 is no compression and 9 is the maximum compression
+//!    	 .with_compression_level(6)
+//!    	 // Set the buffer size to 64KB - this is the default
+//!    	 // The buffer size is used to read and write data
+//!    	 // A larger buffer size speeds up compression but uses more memory
+//!    	 // A smaller buffer size slows down compression but uses less memory
+//!    	 .with_buffer_size(64)
+//!    	 // Compress the data and report progress
+//!    	 .compress(|progress| {
+//!    		 // The percentage of compression completed, ranging between 0.0 and 1.0
+//!    		 // Multiply by 100 to get a percentage
+//!    		 let percentage = progress.percentage * 100f32;
+//!
+//!    		 // The number of bytes processed
+//!    		 let processed = progress.bytes_processed;
+//!
+//!    		 // The number of bytes processed per second
+//!    		 let bps = progress.bytes_per_second;
+//!
+//!    		 // Convert bytes per second to megabytes per second
+//!    		 let mbps = (bps as f32) / 1024f32 / 1024f32;
+//!
+//!    		 // Update progress on the same console line
+//!    		 print!("\x1b[1A"); // Move cursor up
+//!    		 println!("Progress: {:.2}% - Processed: {}B - Speed: {:.2}Mb/s", percentage, processed, mbps);
+//!    	 }).unwrap();
+//!
+//!     // Retrieve and print compression results
+//!     let duration = result.elapsed_time;
+//!     let size = result.size;
+//!     let original_size = result.original_size;
+//!     println!("Compression complete! Elapsed time: {:?}", duration);
+//!     println!("Original size: {}B - Compressed size: {}B", original_size, size);
+//! }
+//! ```
+//!
+//! ## Detailed Explanation
+//!
+//! ### LZMATarballWriter::new
+//! - `new(input: impl AsRef<Path>, output: impl AsRef<Path>) -> Result<Self, Box<dyn Error>>`
+//! - Creates a new instance of the `LZMATarballWriter`.
+//! - It takes the path of the input (file or directory) to be compressed and the path of the output file.
+//! - The method ensures that the input path exists and resolves the output directory.
+//!
+//! ### LZMATarballWriter::with_compression_level
+//! - `with_compression_level(&mut self, level: u8) -> &mut Self`
+//! - Sets the compression level, clamping it between 0 (no compression) and 9 (maximum compression).
+//! - The default compression level is 6.
+//!
+//! ### LZMATarballWriter::with_buffer_size
+//! - `with_buffer_size(&mut self, size: u16) -> &mut Self`
+//! - Sets the buffer size for reading and writing data during compression.
+//! - The buffer size is in kilobytes (KB). The default is 64KB.
+//!
+//! ### LZMATarballWriter::compress
+//! - `compress<F>(&self, callback: F) -> Result<LZMAResult, Box<dyn Error>> where F: Fn(LZMACallbackResult) + 'static + Send + Sync`
+//! - Compresses the input path into an LZMA-compressed tarball.
+//! - A callback function is provided to report progress, which includes the percentage completed, bytes processed, and the speed in bytes per second (converted to megabytes per second).
+//! - Returns an `LZMAResult` on success, containing details about the compressed file size, original file size, and elapsed time of compression.
+
 use log::{debug, error};
 use std::env::temp_dir;
 use std::error::Error;
