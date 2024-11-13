@@ -1,4 +1,4 @@
-//!! # LZMA Tarball Documentation
+//! # LZMA Tarball Documentation
 //!
 //!This library provides functionalities to compress directories and files into `.tar.xz` format and decompress `.tar.xz` files using configurable options.
 //!
