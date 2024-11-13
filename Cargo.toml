@@ -1,6 +1,6 @@
 [package]
 name = "lzma_tarball"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 description = "A simple library for reading and writing tarballs with lzma compression."
 license-file = "LICENSE"
