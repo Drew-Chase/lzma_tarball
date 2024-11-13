@@ -4,7 +4,7 @@ fn main() {
 	let archive = "../test/test.tar.xz";
 	let result = LZMATarballReader::new(archive)
 		.unwrap()
-		.decompress("output")
+		.decompress("../test/output")
 		.unwrap();
 
 	let files = result.files;
