@@ -43,6 +43,4 @@ fn main() {
 	let original_size = result.original_size;
 	println!("Compression complete! Elapsed time: {:?}", duration);
 	println!("Original size: {}B - Compressed size: {}B", original_size, size);
-	
-	lzma_tarball::reader::extract_files(output, "../test/extracted").unwrap();
 }
