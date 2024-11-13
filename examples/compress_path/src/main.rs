@@ -1,4 +1,4 @@
-use lzma_tarball::lzma::LZMATarball;
+use lzma_tarball::writer::LZMATarballWriter;
 
 fn main() {
 	// this can be any directory or file, relative or absolute path
@@ -8,7 +8,7 @@ fn main() {
 	// this will create the parent directories if they don't exist.
 	let output = "../test/test.tar.xz";
 
-	let result = LZMATarball::new(input_path, output)
+	let result = LZMATarballWriter::new(input_path, output)
 		.unwrap()
 		// Set the compression level to 6 - this is the default
 		// the range is 0-9, where 0 is no compression and 9 is maximum compression
@@ -43,4 +43,6 @@ fn main() {
 	let original_size = result.original_size;
 	println!("Compression complete! Elapsed time: {:?}", duration);
 	println!("Original size: {}B - Compressed size: {}B", original_size, size);
+	
+	lzma_tarball::reader::extract_files(output, "../test/extracted").unwrap();
 }
