@@ -1,0 +1,10 @@
+[package]
+name = "lzma_tarball"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+xz2 = { version = "0.1.7", features = ["tokio", "tokio-io"] }
+log = "0.4.22"
+tar = "0.4.43"
+chrono = {version = "0.4.38", features = ["now"]}
