@@ -117,20 +117,34 @@
 /// - `set_tar_file`: Sets a custom TAR file path.
 /// - `compress`: Compresses the data and calls the provided callback function with progress updates.
 
-pub mod lzma;
+#[cfg(feature = "compression")]
+pub mod writer;
+#[cfg(feature = "decompression")]
+pub mod reader;
 
 #[test]
-fn test() {
-	use crate::lzma::LZMATarball;
-	use log::{debug, info};
-	let result = LZMATarball::new("./", "test.tar.xz")
+#[cfg(feature = "compression")]
+fn compress() {
+	use crate::writer::LZMATarballWriter;
+	let result = LZMATarballWriter::new("./", "test.tar.xz")
 		.unwrap()
 		.with_compression_level(6)
 		.with_buffer_size(64)
 		.compress(|progress| {
-			debug!("Progress: {:?}", progress);
+			println!("Progress: {:?}", progress);
 		});
 
-	info!("Result: {:?}", result);
+	println!("Result: {:?}", result);
+	assert!(result.is_ok());
+}
+#[test]
+#[cfg(feature = "decompression")]
+fn decompress() {
+	use crate::reader::LZMATarballReader;
+	let result = LZMATarballReader::new("test.tar.xz")
+		.unwrap()
+		.decompress("output");
+
+	println!("Result: {:?}", result);
 	assert!(result.is_ok());
 }
