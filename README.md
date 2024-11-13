@@ -9,7 +9,7 @@ You can create an `LZMATarball` instance by specifying the input directory (or f
 ```rust
 use lzma_tarball::LZMATarball;
 
-let options = LZMATarball::new("./input_directory", "output.tar.xz");
+let options = LZMATarball::new("./input_directory_or_file", "output.tar.xz");
 ```
 
 ## Configuring Options
@@ -17,7 +17,7 @@ let options = LZMATarball::new("./input_directory", "output.tar.xz");
 You can configure the compression level and buffer size using the provided methods.
 
 ```rust
-let options = LZMATarball::new("./input_directory", "output.tar.xz")
+let options = LZMATarball::new("./input_directory_or_file", "output.tar.xz")
      .with_compression_level(6)
      .with_buffer_size(64);
 ```
@@ -41,7 +41,7 @@ This example demonstrates how to create an `LZMATarball` instance, configure it,
 ```rust
 use lzma_tarball::LZMATarball;
 
-let result = LZMATarball::new("./input_directory", "output.tar.xz")
+let result = LZMATarball::new("./input_directory_or_file", "output.tar.xz")
      .with_compression_level(6)
      .with_buffer_size(64)
      .compress(|progress| {
@@ -56,7 +56,7 @@ assert!(result.is_ok());
 By default, the TAR file is created in the current directory. You can set a custom TAR file path using the `set_tar_file` method.
 
 ```rust
-let options = LZMATarball::new("./input_directory", "output.tar.xz")
+let options = LZMATarball::new("./input_directory_or_file", "output.tar.xz")
      .set_tar_file("./custom/path/custom.tar");
 
 let result = options.compress(|progress| {
@@ -112,7 +112,7 @@ pub struct LZMACallbackResult {
 Here are some of the key methods available:
 
 - `new`: Creates a new instance of `LZMATarball`.
-- `with_compression_level`: Sets the desired compression level.
-- `with_buffer_size`: Specifies the buffer size to use.
-- `set_tar_file`: Sets a custom TAR file path.
+- `with_compression_level`: Sets the desired compression level (0-9).
+- `with_buffer_size`: Specifies the buffer size to use (in KB).
+- `set_tar_file`: Sets a custom TAR file path (this is the temp file).
 - `compress`: Compresses the data and calls the provided callback function with progress updates.
