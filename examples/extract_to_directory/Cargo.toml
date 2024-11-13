@@ -1,0 +1,7 @@
+[package]
+name = "extract_to_directory"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lzma_tarball = { path = "../../", features = ["decompression", "log"] }
