@@ -1,0 +1,7 @@
+[package]
+name = "get_archive_entries"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lzma_tarball = { path = "../../", features = ["decompression", "log"] }
