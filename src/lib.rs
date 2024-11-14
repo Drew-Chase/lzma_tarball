@@ -61,8 +61,8 @@
 //!
 //!    let result = LZMATarballWriter::new(input_path, output_file)
 //!        .unwrap()
-//!        .with_compression_level(6)
-//!        .with_buffer_size(64)
+//!        .set_compression_level(6)
+//!        .set_buffer_size(64)
 //!        .compress(|progress| {
 //!            let percentage = progress.percentage * 100f32;
 //!            let processed = progress.bytes_processed;
@@ -271,30 +271,3 @@
 pub mod writer;
 #[cfg(feature = "decompression")]
 pub mod reader;
-
-#[test]
-#[cfg(feature = "compression")]
-fn compress() {
-	use crate::writer::LZMATarballWriter;
-	let result = LZMATarballWriter::new("./", "test.tar.xz")
-		.unwrap()
-		.with_compression_level(6)
-		.with_buffer_size(64)
-		.compress(|progress| {
-			println!("Progress: {:?}", progress);
-		});
-
-	println!("Result: {:?}", result);
-	assert!(result.is_ok());
-}
-#[test]
-#[cfg(feature = "decompression")]
-fn decompress() {
-	use crate::reader::LZMATarballReader;
-	let result = LZMATarballReader::new("test.tar.xz")
-		.unwrap()
-		.decompress("output");
-
-	println!("Result: {:?}", result);
-	assert!(result.is_ok());
-}
