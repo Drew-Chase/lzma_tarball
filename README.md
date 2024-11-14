@@ -281,12 +281,14 @@ Here is a complete example showing how to list the entries of an archive:
 ```rust
 use lzma_tarball::reader::LZMATarballReader;
 // ...
-let reader = LZMATarballReader::new()
-    .set_archive("../test/archive.tar.xz").unwrap();
+let entries: Vec<String> = LZMATarballReader::new()
+// Set the archive file (tarball) path
+.set_archive("../test/test.tar.xz").unwrap()
+// Read the entries in the archive
+.entries().unwrap();
 
-let entries = reader.entries().unwrap();
 for entry in entries {
-    println!("Entry: {}", entry);
+println!("Entry: {}", entry);
 }
 ```
 
