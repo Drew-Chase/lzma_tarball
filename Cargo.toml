@@ -1,12 +1,14 @@
 [package]
 name = "lzma_tarball"
-version = "0.0.3"
+version = "0.0.4"
 edition = "2021"
 description = "A simple library for reading and writing tarballs with lzma compression."
 license-file = "LICENSE"
 authors = ["Drew Chase"]
 categories = ["compression", "filesystem", "data-structures"]
 keywords = ["tarball", "compression", "archive", "lzma", "tar"]
+repository = "https://github.com/Drew-Chase/lzma_tarball"
+readme = "README.md"
 
 
 [dependencies]
