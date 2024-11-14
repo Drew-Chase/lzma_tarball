@@ -1,6 +1,6 @@
 [package]
 name = "lzma_tarball"
-version = "0.0.4"
+version = "0.1.0"
 edition = "2021"
 description = "A simple library for reading and writing tarballs with lzma compression."
 license-file = "LICENSE"
@@ -16,6 +16,7 @@ xz2 = { version = "0.1.7", features = ["tokio", "tokio-io"] }
 log = { version = "0.4.22", optional = true }
 tar = "0.4.43"
 chrono = { version = "0.4.38", features = ["now"] }
+walkdir = { version = "2.5.0" }
 
 [features]
 compression = []
