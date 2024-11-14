@@ -31,9 +31,9 @@
 //!
 //!     // Print decompression summary
 //!     println!(
-//!    	 "Decompressed {} files in {:?} with a total size of {} bytes", 
-//!    	 files.len(), 
-//!    	 duration, 
+//!    	 "Decompressed {} files in {:?} with a total size of {} bytes",
+//!    	 files.len(),
+//!    	 duration,
 //!    	 total_size
 //!     );
 //! }
