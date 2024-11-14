@@ -1,57 +1,3 @@
-//! LZMA compressed tarball reader.
-//!
-//! The `LZMATarballReader` is a utility for handling the decompression of LZMA compressed tarball files.
-//! It provides various configuration options for file handling and decompression processes.
-//!
-//! # Features
-//! - Decompresses LZMA compressed tarballs
-//! - Preserves file metadata (mtime, ownership, permissions)
-//! - Supports overwriting existing files
-//!
-//! # Example usage of `LZMATarballReader`
-//!
-//! ```rust
-//! use lzma_tarball::reader::LZMATarballReader;
-//!
-//! fn main() {
-//!     // Path to the compressed tarball file
-//!     let archive = "../test/test.tar.xz";
-//!
-//!     // Create a new instance of `LZMATarballReader`
-//!     let result = LZMATarballReader::new(archive)
-//!    	 .unwrap()
-//!    	 // Decompress the archive to the specified output directory
-//!    	 .decompress("../test/output")
-//!    	 .unwrap();
-//!
-//!     // Retrieve decompression results
-//!     let files = result.files;
-//!     let duration = result.elapsed_time;
-//!     let total_size = result.total_size;
-//!
-//!     // Print decompression summary
-//!     println!(
-//!    	 "Decompressed {} files in {:?} with a total size of {} bytes",
-//!    	 files.len(),
-//!    	 duration,
-//!    	 total_size
-//!     );
-//! }
-//!
-//! ```
-//!
-//! # Methods
-//! - new: Creates a new `LZMATarballReader`.
-//! - set_overwrite: Sets whether to overwrite existing files.
-//! - set_mask: Sets the file permission mask.
-//! - set_ignore_zeros: Sets whether to ignore zero blocks in the archive.
-//! - set_preserve_mtime: Sets whether to preserve file modification times.
-//! - set_preserve_ownerships: Sets whether to preserve file ownerships.
-//! - set_preserve_permissions: Sets whether to preserve file permissions.
-//! - entries: Lists entries in the tarball archive.
-//! - get_archive: Returns an `Archive` object for the tarball file.
-//! - decompress: Decompresses the tarball archive to a specified output directory.
-
 use std::error::Error;
 use std::fs;
 use std::fs::File;
@@ -62,7 +8,8 @@ use xz2::read::XzDecoder;
 /// `LZMATarballReader` is used to read and decompress LZMA compressed tarball files.
 #[derive(Debug, Clone)]
 pub struct LZMATarballReader {
-	tar_file: PathBuf,
+	archive_file: Option<PathBuf>,
+	output: Option<PathBuf>,
 	overwrite: bool,
 	mask: u32,
 	ignore_zeros: bool,
@@ -80,6 +27,12 @@ pub struct DecompressionResult {
 	pub total_size: u64,
 }
 
+impl Default for LZMATarballReader {
+	fn default() -> Self {
+		Self::new()
+	}
+}
+
 impl LZMATarballReader {
 	/// Creates a new `LZMATarballReader`.
 	///
@@ -90,13 +43,10 @@ impl LZMATarballReader {
 	/// # Errors
 	///
 	/// Returns an error if the file does not exist.
-	pub fn new(tar_file: impl AsRef<Path>) -> Result<Self, Box<dyn Error>> {
-		let tar_file = tar_file.as_ref();
-		if !tar_file.exists() {
-			return Err(format!("File not found: {:?}", tar_file).into());
-		}
-		Ok(Self {
-			tar_file: tar_file.to_path_buf(),
+	pub fn new() -> Self {
+		Self {
+			archive_file: None,
+			output: None,
 			overwrite: false,
 			mask: 0,
 			ignore_zeros: false,
@@ -104,7 +54,40 @@ impl LZMATarballReader {
 			preserve_ownerships: true,
 			preserve_permissions: true,
 			unpack_xattrs: false,
-		})
+		}
+	}
+
+	/// Sets the archive file path.
+	///
+	/// # Arguments
+	///
+	/// * `archive` - Path to the tarball archive file.
+	///
+	/// # Errors
+	///
+	/// Returns an error if the file does not exist.
+	pub fn set_archive(&mut self, archive: impl AsRef<Path>) -> Result<&mut Self, Box<dyn Error>> {
+		if !archive.as_ref().exists() {
+			return Err(format!("File not found: {:?}", archive.as_ref()).into());
+		}
+		self.archive_file = Some(archive.as_ref().to_path_buf());
+		Ok(self)
+	}
+
+	/// Sets the output directory for decompressed files.
+	///
+	/// # Arguments
+	///
+	/// * `output_dir` - Path to the output directory.
+	///
+	/// # Errors
+	///
+	/// Returns an error if the directory cannot be created.
+	pub fn set_output_directory(&mut self, output_dir: impl AsRef<Path>) -> Result<&mut Self, Box<dyn Error>> {
+		let output_dir = output_dir.as_ref().to_path_buf();
+		fs::create_dir_all(&output_dir)?;
+		self.archive_file = Some(output_dir);
+		Ok(self)
 	}
 
 	/// Sets the overwrite flag.
@@ -201,20 +184,23 @@ impl LZMATarballReader {
 	///
 	/// A result containing the `Archive` object or an error.
 	pub fn get_archive(&self) -> Result<Archive<XzDecoder<File>>, Box<dyn Error>> {
-		let archive = &self.tar_file;
-		let file = File::open(archive)?;
-		let mut archive = Archive::new(XzDecoder::new(file));
+		if let Some(archive) = &self.archive_file {
+			let file = File::open(archive)?;
+			let mut archive = Archive::new(XzDecoder::new(file));
 
-		// Set archive options
-		archive.set_overwrite(self.overwrite);
-		archive.set_mask(self.mask);
-		archive.set_ignore_zeros(self.ignore_zeros);
-		archive.set_preserve_mtime(self.preserve_mtime);
-		archive.set_preserve_ownerships(self.preserve_ownerships);
-		archive.set_preserve_permissions(self.preserve_permissions);
-		archive.set_unpack_xattrs(self.unpack_xattrs);
+			// Set archive options
+			archive.set_overwrite(self.overwrite);
+			archive.set_mask(self.mask);
+			archive.set_ignore_zeros(self.ignore_zeros);
+			archive.set_preserve_mtime(self.preserve_mtime);
+			archive.set_preserve_ownerships(self.preserve_ownerships);
+			archive.set_preserve_permissions(self.preserve_permissions);
+			archive.set_unpack_xattrs(self.unpack_xattrs);
 
-		Ok(archive)
+			Ok(archive)
+		} else {
+			Err("No archive file specified".into())
+		}
 	}
 
 	/// Decompresses the tarball archive to the specified output directory.
@@ -226,32 +212,35 @@ impl LZMATarballReader {
 	/// # Errors
 	///
 	/// Returns an error if the decompression fails.
-	pub fn decompress(&self, output_dir: impl AsRef<Path>) -> Result<DecompressionResult, Box<dyn Error>> {
-		let start = std::time::Instant::now();
-		let output_dir = output_dir.as_ref();
-		if !output_dir.exists() {
-			fs::create_dir_all(output_dir)?;
+	pub fn decompress(&self) -> Result<DecompressionResult, Box<dyn Error>> {
+		if let Some(output_dir) = &self.output {
+			let start = std::time::Instant::now();
+			if !output_dir.exists() {
+				fs::create_dir_all(output_dir)?;
+			}
+
+			// Get the list of files in the archive
+			let files = self.entries()?;
+
+			// Decompress the archive
+			let mut archive = self.get_archive()?;
+			archive.unpack(output_dir)?;
+
+			// Calculate the total size of the decompressed files
+			let mut size = 0;
+			for file in &files {
+				let file = output_dir.join(file);
+				let metadata = fs::metadata(file)?;
+				size += metadata.len();
+			}
+
+			Ok(DecompressionResult {
+				elapsed_time: start.elapsed(),
+				files,
+				total_size: size,
+			})
+		} else {
+			Err("No output directory specified".into())
 		}
-
-		// Get the list of files in the archive
-		let files = self.entries()?;
-
-		// Decompress the archive
-		let mut archive = self.get_archive()?;
-		archive.unpack(output_dir)?;
-
-		// Calculate the total size of the decompressed files
-		let mut size = 0;
-		for file in &files {
-			let file = output_dir.join(file);
-			let metadata = fs::metadata(file)?;
-			size += metadata.len();
-		}
-
-		Ok(DecompressionResult {
-			elapsed_time: start.elapsed(),
-			files,
-			total_size: size,
-		})
 	}
 }
