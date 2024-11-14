@@ -184,31 +184,110 @@ fn main() {
 ```
 
 ## Extracting an Archive
-Extracting is pretty straight forward. First create a new instance of the `LZMATarballReader` struct using the `new` method.
+
+To extract a `.tar.xz` archive, use the `LZMATarballReader` struct. First, create a new instance of the `LZMATarballReader` struct using the `new` method.
 
 ```rust
 use lzma_tarball::reader::LZMATarballReader;
 // ...
-let result = LZMATarballReader::new().unwrap();
+let mut reader = LZMATarballReader::new();
 ```
 
+By default, the reader has some predefined settings, such as not overwriting existing files, not preserving modification times, ownerships, permissions, and not unpacking extended attributes. These settings can be modified using various methods.
 
+```rust
+// ...
+.set_overwrite(true) // Allow overwriting existing files
+.set_mask(0o644) // Set the permission mask for extracted files
+.set_ignore_zeros(false) // Whether to ignore zero-filled blocks in the archive
+.set_preserve_mtime(true) // Preserve modification times
+.set_preserve_ownerships(true) // Preserve ownership information
+.set_preserve_permissions(true) // Preserve permissions
+```
 
+Next, set the archive file you want to extract using the `set_archive` method.
 
-### Full Example
+```rust
+// ...
+.set_archive("../test/archive.tar.xz").unwrap();
+```
+
+Then, set the output directory where the extracted files should be placed using the `set_output_directory` method.
+
+```rust
+// ...
+.set_output_directory("../test/output").unwrap();
+```
+
+Finally, call the `decompress` method to extract the data. This method returns a `DecompressionResult` struct that contains information about the decompression process, such as the elapsed time, a list of extracted files, and the total size of all extracted files.
+
+```rust
+// ...
+let result = reader.decompress().unwrap();
+for file in result.files {
+    println!("Extracted: {}", file);
+}
+println!("Total size: {} bytes", result.total_size);
+println!("Elapsed time: {:?}", result.elapsed_time);
+```
+
+Here is a complete example that chains all of the methods together:
+
 ```rust
 use lzma_tarball::reader::LZMATarballReader;
-fn main() {
-	let archive = "../test/test.tar.xz";
-	let result = LZMATarballReader::new(archive)
-		.unwrap()
-		.decompress("../test/output")
-		.unwrap();
+// ...
+let result = LZMATarballReader::new()
+    .set_archive("../test/archive.tar.xz").unwrap()
+    .set_output_directory("../test/output").unwrap()
+    .set_overwrite(true)
+    .set_mask(0o644)
+    .set_ignore_zeros(false)
+    .set_preserve_mtime(true)
+    .set_preserve_ownerships(true)
+    .set_preserve_permissions(true)
+    .decompress().unwrap();
 
-	let files = result.files;
-	let duration = result.elapsed_time;
-	let total_size = result.total_size;
-	println!("Decompressed {} files in {:?} with a total size of {} bytes", files.len(), duration, total_size);
+for file in result.files {
+    println!("Extracted: {}", file);
+}
+println!("Total size: {} bytes", result.total_size);
+println!("Elapsed time: {:?}", result.elapsed_time);
+``` 
+## Listing Archive Entries
+
+Before extracting an archive, you might want to examine its contents. The `LZMATarballReader` struct provides a method called `entries` which returns a list of entries in the archive.
+
+First, create a new instance of the `LZMATarballReader` struct and set the archive file using the `set_archive` method.
+
+```rust
+use lzma_tarball::reader::LZMATarballReader;
+// ...
+let mut reader = LZMATarballReader::new();
+reader.set_archive("../test/archive.tar.xz").unwrap();
+```
+
+You can then use the `entries` method to list the entries within the archive. This method returns a `Result` with a vector of strings, each representing a file or directory path inside the archive.
+
+```rust
+// ...
+let entries = reader.entries().unwrap();
+for entry in entries {
+    println!("Entry: {}", entry);
 }
 ```
 
+Here is a complete example showing how to list the entries of an archive:
+
+```rust
+use lzma_tarball::reader::LZMATarballReader;
+// ...
+let reader = LZMATarballReader::new()
+    .set_archive("../test/archive.tar.xz").unwrap();
+
+let entries = reader.entries().unwrap();
+for entry in entries {
+    println!("Entry: {}", entry);
+}
+```
+
+This section shows how to list all the entries in a `.tar.xz` archive, providing a means to inspect the contents before deciding to extract them. This can be especially useful for verifying that the archive contains the files you expect or to simply explore its contents.
