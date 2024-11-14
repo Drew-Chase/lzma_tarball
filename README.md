@@ -288,7 +288,7 @@ let entries: Vec<String> = LZMATarballReader::new()
 .entries().unwrap();
 
 for entry in entries {
-println!("Entry: {}", entry);
+    println!("Entry: {}", entry);
 }
 ```
 
