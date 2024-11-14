@@ -182,3 +182,33 @@ fn main() {
 	println!("Original size: {}B - Compressed size: {}B", original_size, size);
 }
 ```
+
+## Extracting an Archive
+Extracting is pretty straight forward. First create a new instance of the `LZMATarballReader` struct using the `new` method.
+
+```rust
+use lzma_tarball::reader::LZMATarballReader;
+// ...
+let result = LZMATarballReader::new().unwrap();
+```
+
+
+
+
+### Full Example
+```rust
+use lzma_tarball::reader::LZMATarballReader;
+fn main() {
+	let archive = "../test/test.tar.xz";
+	let result = LZMATarballReader::new(archive)
+		.unwrap()
+		.decompress("../test/output")
+		.unwrap();
+
+	let files = result.files;
+	let duration = result.elapsed_time;
+	let total_size = result.total_size;
+	println!("Decompressed {} files in {:?} with a total size of {} bytes", files.len(), duration, total_size);
+}
+```
+
