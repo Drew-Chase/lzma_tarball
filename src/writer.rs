@@ -77,6 +77,7 @@
 //! - A callback function is provided to report progress, which includes the percentage completed, bytes processed, and the speed in bytes per second (converted to megabytes per second).
 //! - Returns an `LZMAResult` on success, containing details about the compressed file size, original file size, and elapsed time of compression.
 
+#[cfg(feature = "log")]
 use log::{debug, error};
 use std::env::temp_dir;
 use std::error::Error;
@@ -121,7 +122,10 @@ impl LZMATarballWriter {
 	pub fn new(input: impl AsRef<Path>, output: impl AsRef<Path>) -> Result<Self, Box<dyn Error>> {
 		let absolute_input = input.as_ref().canonicalize()?;
 		if !absolute_input.exists() {
-			error!("Input path does not exist: {:?}", absolute_input);
+			#[cfg(feature = "log")]
+			{
+				error!("Input path does not exist: {:?}", absolute_input);
+			}
 			return Err("Input path does not exist".into());
 		}
 		let filename = match input.as_ref().file_name() {
@@ -199,8 +203,9 @@ impl LZMATarballWriter {
 		}
 
 		let tarball_size = self.tar_file.metadata()?.len();
-
+		#[cfg(feature = "log")]
 		debug!("Removing tar file: {:?}", self.tar_file);
+
 		std::fs::remove_file(&self.tar_file)
 			.map_err(|e| format!("Failed to remove tar file: {}", e))?;
 
@@ -226,6 +231,7 @@ impl LZMATarballWriter {
 /// - `Ok(())` on success
 /// - `Box<dyn Error>` on failure
 fn create_tar(filepath: &Path, tar_file_path: &Path) -> Result<(), Box<dyn Error>> {
+	#[cfg(feature = "log")]
 	debug!("Creating tar file: {:?}", tar_file_path);
 	let tar_file = File::create(tar_file_path)?;
 	let mut tar_builder = Builder::new(BufWriter::new(tar_file));
@@ -260,6 +266,7 @@ fn compress_directory(
 	tar_builder: &mut Builder<BufWriter<File>>,
 ) -> Result<(), Box<dyn Error>>
 {
+	#[cfg(feature = "log")]
 	debug!("Compressing directory: {:?}", directory.as_ref());
 	for entry in std::fs::read_dir(directory.as_ref())? {
 		let entry = entry?;
@@ -299,6 +306,7 @@ fn compress_file(
 		file.strip_prefix(root)?
 	};
 
+	#[cfg(feature = "log")]
 	debug!("Streamed file to tar: {:?}", compressed_path);
 	let mut stream = File::open(file)?;
 	tar_builder.append_file(compressed_path, &mut stream)?;
@@ -306,7 +314,7 @@ fn compress_file(
 	Ok(())
 }
 
-/// Compresses a tar file into an LZMA-compressed file
+/// Compresses a tar file into an LzMA-compressed file
 ///
 /// # Parameters
 /// - `input_path`: The path to the input tar file
@@ -334,6 +342,7 @@ fn compress_tar<F>(
 	let mut buffer = vec![0; 1024 * (buffer_size as usize)];
 
 	let total_size = std::fs::metadata(input_path)?.len();
+	#[cfg(feature = "log")]
 	debug!("Balling up the tar with {}KB Buffer...", buffer_size);
 	let mut bytes_processed = 0;
 	let start = std::time::Instant::now();
@@ -357,6 +366,7 @@ fn compress_tar<F>(
 	}
 
 	compressor.finish()?;
+	#[cfg(feature = "log")]
 	debug!("Compression complete!");
 	Ok(())
 }
