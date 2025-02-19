@@ -7,6 +7,7 @@
       <sourceFolder url="file://$MODULE_DIR$/examples/extract_to_directory/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/examples/get_archive_entries/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/examples/compress_path/target" />
       <excludeFolder url="file://$MODULE_DIR$/examples/extract_to_directory/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
