@@ -17,8 +17,14 @@ log = { version = "0.4.22", optional = true }
 tar = "0.4.43"
 chrono = { version = "0.4.38", features = ["now"] }
 walkdir = { version = "2.5.0" }
+anyhow = "1.0.95"
 
 [features]
+default = ["decompression", "compression"]
 compression = []
 decompression = []
 log = ["dep:log"]
+
+
+[dev-dependencies]
+log = "0.4.22"
