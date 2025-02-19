@@ -297,3 +297,7 @@
 pub mod writer;
 #[cfg(feature = "decompression")]
 pub mod reader;
+#[cfg(not(feature = "log"))]
+#[allow(unused_imports)]
+#[macro_use]
+mod log_stub;
