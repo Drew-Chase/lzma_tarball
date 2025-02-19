@@ -30,11 +30,11 @@ fn main() {
 		.with_files(
 			&mut vec![
 				ArchiveEntry {
-					filesystem_path: PathBuf::from("./Cargo.toml"),
+					filesystem_path: PathBuf::from("compress_path/Cargo.toml"),
 					archive_path: "/individual/Cargo.toml".to_string(),
 				},
 				ArchiveEntry {
-					filesystem_path: PathBuf::from("./Cargo.lock"),
+					filesystem_path: PathBuf::from("compress_path/Cargo.lock"),
 					archive_path: "/individual/Cargo.lock".to_string(),
 				}
 			]

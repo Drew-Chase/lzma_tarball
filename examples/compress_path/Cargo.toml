@@ -1,7 +1,0 @@
-[package]
-name = "compress_path"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-lzma_tarball = { path = "../../", features = ["compression"] }
