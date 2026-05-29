@@ -14,7 +14,7 @@ readme = "README.md"
 [dependencies]
 xz2 = { version = "0.1.7", features = ["tokio", "tokio-io"] }
 log = { version = "0.4.22", optional = true }
-tar = "0.4.43"
+tar = "0.4.46"
 chrono = { version = "0.4.38", features = ["now"] }
 walkdir = { version = "2.5.0" }
 anyhow = "1.0.95"
